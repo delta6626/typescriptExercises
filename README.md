@@ -1,1 +1,1 @@
-# typescriptExercises
+# TypeScript exercises
