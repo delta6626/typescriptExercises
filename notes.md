@@ -272,6 +272,53 @@ type Name = string; // Alias for string
 let userName: Name = "Alice";
 ```
 
+### Basic Syntax
+
+```ts
+type AliasName = ExistingType;
+```
+
+### Examples
+
+#### 1. **Primitive Type Alias**
+
+```ts
+type ID = number;
+let userId: ID = 123;
+```
+
+#### 2. **Union Type Alias**
+
+```ts
+type Status = "pending" | "approved" | "rejected";
+let applicationStatus: Status = "approved";
+```
+
+#### 3. **Object Type Alias**
+
+```ts
+type User = {
+  id: number;
+  name: string;
+  email?: string; // optional
+};
+```
+
+#### 4. **Function Type Alias**
+
+```ts
+type Greet = (name: string) => string;
+
+const greetUser: Greet = (name) => `Hello, ${name}`;
+```
+
+#### 5. **Tuple Type Alias**
+
+```ts
+type Point = [number, number];
+const origin: Point = [0, 0];
+```
+
 ## Enums in TypeScript
 
 An enum is a way to define a set of named constants. Enums are available at runtime.
@@ -633,3 +680,163 @@ loggingIdentity([1, 2, 3]); // OK
 loggingIdentity("Hello"); // OK
 loggingIdentity(42); // Error: number does not have 'length'
 ```
+
+## keyof operator
+
+`keyof` in TypeScript gets the keys of a type as a union of strings (or symbols/numbers).
+
+### **Example**:
+
+```ts
+type User = { id: number; name: string };
+type Keys = keyof User; // "id" | "name"
+```
+
+### **Example: Accessing user data safely**
+
+```ts
+type User = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+function getValue<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+
+const user: User = { id: 1, name: "Alice", email: "alice@example.com" };
+
+const name = getValue(user, "name"); // type is string
+const property = getValue(user, "age"); // error
+```
+
+## Record utility type
+
+In TypeScript, `Record` is a utility type to define an object type with specific keys and value types.
+
+### Example:
+
+```ts
+type UserRoles = Record<string, "admin" | "user">;
+
+const roles: UserRoles = {
+  alice: "admin",
+  bob: "user",
+};
+
+// Or
+
+const person: Record<string, string | number> = {
+  name: "alice",
+  id: 1, // "1" works as well,
+};
+```
+
+✅ Ensures all keys have values of the given type.
+✅ Useful for mapping keys to consistent value types.
+
+## **using keyword**
+
+The `using` keyword in TypeScript is used with the **Explicit Resource Management** feature for safely disposing of resources like file handles, sockets, etc.
+
+### Syntax:
+
+```ts
+using resource = new SomeDisposable();
+```
+
+### Requirements:
+
+- The object must implement a `[Symbol.dispose]()` or `[Symbol.asyncDispose]()` method.
+
+### Example:
+
+```ts
+class FileHandle {
+  [Symbol.dispose]() {
+    console.log("File closed");
+    // Perform clean up operations here
+  }
+}
+
+function example() {
+  using file = new FileHandle();
+  // Do something with file
+}
+```
+
+## Helper types
+
+### **Partial Helper Type**
+
+Wraps an existing type to make all its properties optional.
+
+```ts
+type User = { name: string; age: number };
+
+const u1: Partial<User> = { name: "Alice" }; // age is optional
+const u2: Partial<User> = {}; // all properties optional
+```
+
+### **Omit Helper Type**
+
+Excludes specified properties from a type.
+
+```ts
+type User = { id: number; name: string; email: string };
+
+type NoEmail = Omit<User, "email">; // { id: number; name: string }
+type NoId = Omit<User, "id">; // { name: string; email: string }
+```
+
+### **Pick Helper Type**
+
+Includes only specified properties in a type.
+
+```ts
+type User = { id: number; name: string; email: string };
+
+type NameOnly = Pick<User, "name">; // { name: string }
+type Contact = Pick<User, "email" | "name">; // { name: string; email: string }
+```
+
+### **Required Helper Type**
+
+Makes all properties of a type required.
+
+```ts
+type User = { name?: string; age?: number };
+
+type FullUser = Required<User>; // { name: string; age: number }
+
+const u1: FullUser = { name: "Bob", age: 25 }; // ✅
+const u2: FullUser = {}; // ❌ error: name and age are required
+```
+
+## Mapped Type
+
+Creates a new type by looping over keys of an existing type.
+
+```ts
+type User = { name: string; age: number };
+
+type OptionalUser = {
+  [K in keyof User]?: User[K]; // makes all properties optional
+};
+// Equivalent to: { name?: string; age?: number }
+
+Another example:
+
+type ReadonlyUser = {
+  [K in keyof User]: Readonly<User[K]>;
+};
+```
+
+## Modules
+
+JavaScript modules enable you to organize and link code across multiple files. Here are the key points:
+
+1. Separate Memory Space: Each module has its own memory space, preventing function and variable name collisions.
+2. Modular Loading: Modern browsers can load modules on the fly based on references, eliminating the need to load all files upfront.
+3. Code Reusability: Modules allow you to reuse code across different parts of your application efficiently.
